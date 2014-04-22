@@ -1,0 +1,10 @@
+Option 1: undo queue
+stores the changes in each frame to quickly undo and redo changes.
+needs graph to be sorted (guarantee that any way you construct identical graphs will be represented the same).
+Depeneds on efficient sorting to be efficient.
+extra benefit of efficient checking if 2 graphs are identical.
+
+Option 2: temporal tree
+a compression of all the trees representing the frame of the proof into one tree.
+each node(circle nodes or variable nodes) knows what states of the graph it exists in.
+doesn't extend to branching well, since it is very hard to remove all the data of a proof that isn't in the branch.

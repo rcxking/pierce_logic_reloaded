@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+	{% include 'templates/imports.html' %}
+	{% include 'templates/modals.html' %}
+  </head>
+  <body>
+	<div class="navbar navbar-inverse navbar-fixed-top">
+	  <div class="navbar-container container">
+		<a class="navbar-brand" href="#">Peirce Logic</a>
+		<ul class="nav navbar-nav">
+		  <div class="btn-group" id="FileOptions">
+			<button id="newButton" type="button" class="btn navbar-btn btn-success">
+			  <span class="glyphicon glyphicon-file"></span>
+			</button>
+			<button id="loadButton" data-toggle="modal" href="#loadModal" class="btn navbar-btn btn-danger">
+			  <span class="glyphicon glyphicon-folder-open"></span>
+			</button>
+			<button id="saveButton" data-toggle="modal" href="#saveModal" class="btn navbar-btn btn-primary">
+			  <span class="glyphicon glyphicon-floppy-disk"></span>
+			</button>
+		  </div>
+		  <button id="tempButton" data-toggle="modal" href="#tempModal" class="btn navbar-btn btn-info">
+			  <span class="glyphicon glyphicon-book"></span>
+		  </button>
+		  <div class="btn-group text-center" id="proofplayer">
+			<button class="btn navbar-btn btn-default" id="backwardtick">
+			  <span class="glyphicon glyphicon-chevron-left"></span>
+			</button>
+			<button disabled="disabled" class="btn navbar-btn btn-default" id="toggleplay">
+			  <span class="glyphicon glyphicon-play"></span>
+			</button>
+			<button disabled="disabled" class="btn navbar-btn btn-default" id="forwardtick">
+			  <span class="glyphicon glyphicon-chevron-right"></span>
+			</button>
+		  </div>
+		  <span id="MultiSelectStatus"></span>
+		</ul>
+		<ul class="nav navbar-nav navbar-right">
+		  <button id="goalbutton" type="button" class="btn btn-danger navbar-btn" disabled=true value="goGoal">See Goal</button>
+		  <button id="tourbutton" type="button" class="btn btn-primary navbar-btn">Take the tour!</button>
+		  <span id="login">{{greeting}}</span>
+		</ul>
+	  </div>
+	</div>
+	<div id="paper"></div>
+	<div id="minimap"></div>
+	<div class="col-sm-12" id="ModeLinkContainer" type="button"></div>
+	<div id="timeline"></div>
+  </body>
+</html>
