@@ -68,6 +68,11 @@ window.onload = function() {
 		TheProof.next();
 	});
 
+	// UI Play Proof:
+	$('#toggleplay').click(function(e) {
+		TheProof.playback();
+	});
+
 	// ui return to goal button
 	var backNode;
 	$('#goalbutton').click(function() {

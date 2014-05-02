@@ -1,0 +1,31 @@
+4/25/14
+-------
+
+Git Repos
+---------
+Separate repos and issue merge request after project is done. 
+
+Features to Add
+---------------
+1) Play Button
+2) Fixing Collision Detection between double cuts   
+
+Collision Detection
+-------------------
+uinode.js contains the code for representing nodes and drawing nodes. 
+
+dragMove(float, float);
+
+dragMove() function in Level.js (line 180)
+------------------------------------------
+
+Potential Problems: noCollision SHOULD be called false somewhere; unknown where noCollision is called false.  
+Theory: Only checking for noCollision for the LAST object; ignores the rest of the objects.   
+
+Class Relationships
+-------------------
+UINode is PARENT of Level and Variable class.
+Level = Cuts; Variable = Letters.
+If any Level/Variable is created, then the dragMove() function is bound a handler that object.
+
+

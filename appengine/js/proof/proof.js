@@ -483,6 +483,24 @@ Proof.prototype.next = function () {
 	}
 };
 
+// Plays back the proof:
+Proof.prototype.playback = function() {
+	console.log("Now Playing Proof");
+
+	var nextcount = 1;
+	while(true) {
+		if(this.current.next && this.current.next.length == 1) {
+			//setTimeout(function() { this.select(this.current.next.begin().val); }, 5);
+			this.select(this.current.next.begin().val); 
+			nextcount++;
+			console.log("nextcount: " + nextcount);
+		//setTimeout(function() { this.select(this.current.next.begin().val) };, 5);
+		} else {
+			break;
+		}
+	} // End While
+};
+
 // checks if the proof has a fork at the current step
 Proof.prototype.TickRefresh = function () {
 	if(!this.current.prev) {
