@@ -488,10 +488,16 @@ Proof.prototype.playback = function() {
 	console.log("Now Playing Proof");
 
 	var nextcount = 1;
+
+	console.log("current is: " + this.current);
+	console.log("this is: " + this);
+
+	var thisObject = this;
+	/*
 	while(true) {
 		if(this.current.next && this.current.next.length == 1) {
 			//setTimeout(function() { this.select(this.current.next.begin().val); }, 5);
-			this.select(this.current.next.begin().val); 
+			setInterval(this.select(this.current.next.begin().val), 500);
 			nextcount++;
 			console.log("nextcount: " + nextcount);
 		//setTimeout(function() { this.select(this.current.next.begin().val) };, 5);
@@ -499,6 +505,27 @@ Proof.prototype.playback = function() {
 			break;
 		}
 	} // End While
+	*/
+
+	var advanceFunction = function() {
+		if(thisObject.current.next && thisObject.current.next.length == 1) {
+			thisObject.select(thisObject.current.next.begin().val);
+		} else {
+			clearInterval(setIntervalReturn);
+		}
+	}
+
+	var setIntervalReturn = setInterval(advanceFunction, 1000);
+	//setInterval(this.select(this.current.next.begin().val), 5000);
+	//this.select(this.current.next.begin().val);
+	//this.select(this.current.next.begin().val);
+	//setTimeout(this.playback, 5000);
+
+	/*
+	if(!thisObject.current.next || this.current.next.length != 1) {
+		clearInterval(setIntervalReturn);
+	} 
+	*/
 };
 
 // checks if the proof has a fork at the current step
