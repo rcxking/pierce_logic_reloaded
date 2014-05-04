@@ -483,6 +483,9 @@ Proof.prototype.next = function () {
 	}
 };
 
+var advanceFunction = null;
+var setIntervalReturn = null;
+
 // Plays back the proof:
 Proof.prototype.playback = function() {
 	console.log("Now Playing Proof");
@@ -493,21 +496,8 @@ Proof.prototype.playback = function() {
 	console.log("this is: " + this);
 
 	var thisObject = this;
-	/*
-	while(true) {
-		if(this.current.next && this.current.next.length == 1) {
-			//setTimeout(function() { this.select(this.current.next.begin().val); }, 5);
-			setInterval(this.select(this.current.next.begin().val), 500);
-			nextcount++;
-			console.log("nextcount: " + nextcount);
-		//setTimeout(function() { this.select(this.current.next.begin().val) };, 5);
-		} else {
-			break;
-		}
-	} // End While
-	*/
 
-	var advanceFunction = function() {
+	advanceFunction = function() {
 		if(thisObject.current.next && thisObject.current.next.length == 1) {
 			thisObject.select(thisObject.current.next.begin().val);
 		} else {
@@ -515,17 +505,16 @@ Proof.prototype.playback = function() {
 		}
 	}
 
-	var setIntervalReturn = setInterval(advanceFunction, 1000);
-	//setInterval(this.select(this.current.next.begin().val), 5000);
-	//this.select(this.current.next.begin().val);
-	//this.select(this.current.next.begin().val);
-	//setTimeout(this.playback, 5000);
+	setIntervalReturn = setInterval(advanceFunction, 1000);
+};
 
-	/*
-	if(!thisObject.current.next || this.current.next.length != 1) {
+// Pause playing back the proof:
+Proof.prototype.pause = function() {
+	console.log("Now Pausing Playback");
+
+	if(setIntervalReturn !== null) {
 		clearInterval(setIntervalReturn);
-	} 
-	*/
+	} // End if
 };
 
 // checks if the proof has a fork at the current step

@@ -73,6 +73,11 @@ window.onload = function() {
 		TheProof.playback();
 	});
 
+	// UI Pause Proof:
+	$('#pauseplay').click(function(e) {
+		TheProof.pause();
+	});
+
 	// ui return to goal button
 	var backNode;
 	$('#goalbutton').click(function() {
