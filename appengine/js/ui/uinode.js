@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Container for ui nodes
 
-function UINodeTree(R, node_tree, subtree_class, leaf_class, tree_attrs) {
+function UINodeTree(R, node_tree, subtree_class, leaf_class, tree_attrs, bbs, interval) {
     this.R = R;
     this.tree = node_tree; // underlying node tree
     this.subtree_class = subtree_class; // ui class for subtrees
@@ -9,23 +9,43 @@ function UINodeTree(R, node_tree, subtree_class, leaf_class, tree_attrs) {
     this.uinodes = {}; // id -> uinode
 	// construct ui based on input attr
     if(tree_attrs) { 
-		// ui decorator that uses previous attrs and defaults
-        this.constructUI(function(id,uinode) {
-            var attr = tree_attrs[id] || {};
-            var defaultAttrs = uinode.defaultAttr();
-			// input attr union default attr
-            for(var a in defaultAttrs) {
-                if(!(a in attr)) {
-                    attr[a] = defaultAttrs[a];
+        if( bbs && interval ) {
+            this.constructUIAnimate(function(id,uinode) {
+                var attr = tree_attrs[id] || {};
+                var defaultAttrs = uinode.defaultAttr();
+                // input attr union default attr
+                for(var a in defaultAttrs) {
+                    if(!(a in attr)) {
+                        attr[a] = defaultAttrs[a];
+                    }
                 }
-            }
-            uinode.setShapeAttr(attr);
-        });
+                uinode.setShapeAttr(attr);
+            }, bbs, interval);
+        } else {
+    		// ui decorator that uses previous attrs and defaults
+            this.constructUI(function(id,uinode) {
+                var attr = tree_attrs[id] || {};
+                var defaultAttrs = uinode.defaultAttr();
+    			// input attr union default attr
+                for(var a in defaultAttrs) {
+                    if(!(a in attr)) {
+                        attr[a] = defaultAttrs[a];
+                    }
+                }
+                uinode.setShapeAttr(attr);
+            });
+        }
     } else { 
-		// ui decorator that uses just the default attrs
-        this.constructUI(function(id,uinode) {
-            uinode.setShapeAttr(uinode.defaultAttr());
-        });
+        if( bbs && interval ) {
+            this.constructUIAnimate(function(id,uinode) {
+                uinode.setShapeAttr(uinode.defaultAttr());
+            }, bbs, interval);
+        } else {
+		    // ui decorator that uses just the default attrs
+            this.constructUI(function(id,uinode) {
+                uinode.setShapeAttr(uinode.defaultAttr());
+            });
+        }
     }
 }
 
@@ -53,6 +73,72 @@ UINodeTree.prototype.constructUI = function(attr_decorator) {
 		var uinode = self.uinodes[node.getIdentifier()];
 		uinode.updateShape();
 	});
+};
+
+UINodeTree.prototype.constructUIAnimate = function(attr_decorator, bbs, interval) {
+    // convert node tree into id:node dict
+    var treeDict = this.tree.toDict();
+    var ids = this.tree.preOrderFlattenToIDs();
+    for(var i in ids) {
+        var id = ids[i];
+        var uinode = null;
+        var node = treeDict[id];
+        if(node.isLeaf())
+            uinode = new this.leaf_class(this.R, node, this.uinodes);
+        else
+            uinode = new this.subtree_class(this.R, node, this.uinodes);
+        uinode.createShape();
+        attr_decorator(id, uinode);
+        this.uinodes[id] = uinode;
+    }
+    // update shapes
+    var self = this;
+    this.tree.inOrderFMap(function(node) {
+        var uinode = self.uinodes[node.getIdentifier()];
+        uinode.updateShape();
+    });
+
+    // Animate each node to it's new position
+    this.tree.inOrderFMap(function(node) {
+        var uinode = self.uinodes[node.getIdentifier()];
+        if( uinode.shape && uinode.shape.animate ) {
+            var newBBox = uinode.shape.getBBox();
+            var oldBBox = bbs[node.getIdentifier()];
+
+            // If a new shape, animate it expanding
+            if(!oldBBox) {
+                oldBBox = {x: newBBox.x + newBBox.width  / 2, 
+                           y: newBBox.y + newBBox.height / 2, 
+                           width: 0, height: 0 };
+            }
+
+            if( uinode instanceof Variable ) {
+                // Fix new Box for variables
+                newBBox = {x: newBBox.x + newBBox.width  / 2,
+                           y: newBBox.y + newBBox.height / 2,
+                           width:  newBBox.width,
+                           height: newBBox.height };
+                if( !bbs[node.getIdentifier()] ) {
+                    // If a new variable, animate opacity
+                    oldBBox = {x: newBBox.x, y: newBBox.y,
+                            width: newBBox.width, height: newBBox.height };
+                    oldBBox.opacity = 0;
+                    newBBox.opacity = 1;
+                } else {
+                    // Correct old bounding box
+                    oldBBox.x += oldBBox.width  / 2;
+                    oldBBox.y += oldBBox.height / 2;
+                    oldBBox.width = 0;
+                    oldBBox.height = 0;
+                }
+            }
+
+            // Set the shape attribute to the old box, then animate
+            // to the new box
+            uinode.setShapeAttr(oldBBox);
+            uinode.shape.animate(newBBox, interval, "<>");
+        }
+    });
 };
 
 UINodeTree.prototype.deconstructUI = function() {

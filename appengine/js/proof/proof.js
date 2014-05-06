@@ -22,6 +22,11 @@ ProofNode.prototype.constructUI = function(R) {
 	this.updateAttrs();
 };
 
+ProofNode.prototype.constructUIAnimate = function(R, bbs, interval) {
+	this.uiTree = new UINodeTree(R, this.nodeTree, Level, Variable, this.uiAttrs, bbs, interval);
+	this.updateAttrs();
+};
+
 ProofNode.prototype.deconstructUI = function() {
 	if(this.uiTree) {
 		this.updateAttrs();
@@ -467,10 +472,89 @@ Proof.prototype.select = function(node) {
 	}
 };
 
+// selects step from proof
+Proof.prototype.selectAnimate = function(node, interval) {
+	if(this.current !== node) {
+		// Save previous shape attrs
+		var self = this.current.uiTree;
+		var thisProof = this;
+		var oldBBox = {};
+		if(!this.oldShapes) {
+			this.oldShapes = {};
+		} else {
+			for (var key in this.oldShapes) {
+				if (this.oldShapes.hasOwnProperty(key)) {
+				    this.oldShapes[key].remove();
+				    delete this.oldShapes[key];
+				}
+			}
+		}
+
+		self.tree.inOrderFMap(function(tNode) {
+			var id = tNode.getIdentifier();
+			var bbox = self.uinodes[id].shape.getBBox();
+			oldBBox[id] = bbox;
+			thisProof.oldShapes[id] = self.uinodes[id].shape.clone();
+		});
+
+		
+			this.current.deconstructUI();
+		this.current = node;
+
+		// Remove duplicate shapes
+		this.current.nodeTree.inOrderFMap(function(node) {
+			var id = node.getIdentifier();
+			if( thisProof.oldShapes[id] ) {
+				thisProof.oldShapes[id].remove();
+				delete thisProof.oldShapes[id];
+			}
+		});
+
+		this.current.constructUIAnimate(this.paper, oldBBox, interval);
+
+		// Animate each deleted shape closing itself
+		for (var key in this.oldShapes) {
+			if (this.oldShapes.hasOwnProperty(key)) {
+			    var shape = this.oldShapes[key];
+			    if( shape.attr("text") !== undefined ) {
+			    	shape.animate({opacity: 0}, interval, "<>", function() {
+			    		shape.remove();
+			    	});
+			    } else {
+			    	var bbox = shape.getBBox();
+			    	shape.animate({
+			    		x: bbox.x + bbox.width  / 2,
+			    		y: bbox.y + bbox.height / 2,
+			    		width: 0, height: 0
+			    	}, interval, "<>", function() {
+			    		shape.remove();
+			    	});
+			    }
+			}
+		}
+
+		this.changeMode(this.current.mode);
+		if(node.mode !== Proof.LOGIC_MODES.GOAL_MODE && node.mode !== Proof.LOGIC_MODES.PREMISE_MODE)
+			this.automated_check(this.current);
+		this.activateReactor(Proof.EVENTS.SELECT_NODE);
+		// Update Goal button.
+		var goalbutton = document.getElementById("goalbutton");
+		goalbutton.innerHTML = 'See Goal';
+		goalbutton.setAttribute('value', 'goGoal');
+		goalbutton.setAttribute('class', 'btn btn-danger navbar-btn');
+		if (this.current.mode === Proof.LOGIC_MODES.GOAL_MODE) {
+			goalbutton.disabled = true;
+			goalbutton.setAttribute('class', 'btn btn-default navbar-btn');
+		} else {
+			goalbutton.disabled = false;
+		}
+	}
+};
+
 // moves proof to last step
 Proof.prototype.prev = function() {
 	if(this.current.prev) {
-		this.select(this.current.prev);
+		this.selectAnimate(this.current.prev, 1000);
 		// this.activateReactor(Proof.EVENTS.PREVIOUS_NODE);
 	}
 };
@@ -478,7 +562,7 @@ Proof.prototype.prev = function() {
 // moves proof to next step
 Proof.prototype.next = function () {
 	if(this.current.next && this.current.next.length == 1) {
-		this.select(this.current.next.begin().val);
+		this.selectAnimate(this.current.next.begin().val, 1000 );
 		// this.activateReactor(Proof.EVENTS.NEXT_NODE);
 	}
 };
@@ -499,7 +583,7 @@ Proof.prototype.playback = function() {
 
 	advanceFunction = function() {
 		if(thisObject.current.next && thisObject.current.next.length == 1) {
-			thisObject.select(thisObject.current.next.begin().val);
+			thisObject.selectAnimate(thisObject.current.next.begin().val, 1000);
 		} else {
 			clearInterval(setIntervalReturn);
 		}
